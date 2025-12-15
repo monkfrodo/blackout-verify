@@ -512,6 +512,66 @@
         .footer a:hover {
             color: var(--gold);
         }
+
+        /* Cache warning */
+        .cache-warning {
+            background: rgba(201, 162, 39, 0.1);
+            border: 1px solid rgba(201, 162, 39, 0.3);
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 0.9rem;
+            margin: 16px 0;
+            color: var(--gold-light);
+        }
+
+        /* Verification status */
+        .verify-status {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .verify-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            margin: 0 auto 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        .verify-attempt {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--gold);
+            margin-bottom: 8px;
+        }
+
+        .verify-countdown {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+        }
+
+        .verify-countdown span {
+            font-weight: 700;
+            color: var(--gold-light);
+        }
+
+        .verify-info {
+            text-align: center;
+            margin: 24px 0;
+            line-height: 1.6;
+        }
+
+        .verify-info strong {
+            color: var(--gold);
+        }
+
+        .verify-hint {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
@@ -604,9 +664,31 @@
                     </ol>
                 </div>
 
+                <div class="cache-warning">
+                    <strong>⏱ Importante:</strong> Após salvar no site do Tibia, pode levar até 5 minutos para a verificação funcionar. O sistema tentará automaticamente várias vezes.
+                </div>
+
                 <button class="btn" id="btnStep4">Verificar Agora</button>
                 <button class="btn btn-secondary" id="btnBack4">← Voltar</button>
                 <div class="error-msg" id="error4"></div>
+            </div>
+            
+            <!-- Step 4b: Verificando com retry -->
+            <div class="step" id="step4verifying">
+                <div class="step-title">Verificando...</div>
+                
+                <div class="verify-status">
+                    <div class="verify-spinner"></div>
+                    <div class="verify-attempt">Tentativa <span id="attemptNumber">1</span> de <span id="maxAttempts">10</span></div>
+                    <div class="verify-countdown">Próxima tentativa em <span id="countdown">30</span>s</div>
+                </div>
+                
+                <div class="verify-info">
+                    <p>Buscando o código <strong id="searchingCode"></strong> na comment do personagem.</p>
+                    <p class="verify-hint">A API do Tibia pode levar até 5 minutos para atualizar. Aguarde...</p>
+                </div>
+
+                <button class="btn btn-secondary" id="btnCancelVerify">Cancelar</button>
             </div>
 
             <!-- Step 5: Sucesso -->
@@ -676,11 +758,11 @@
         // ============================================
         const CONFIG = {
             // Link do grupo/comunidade do WhatsApp
-            whatsappLink: 'https://chat.whatsapp.com/IVaUmFRyE51KOWbNdWCaNV',
+            whatsappLink: 'https://chat.whatsapp.com/SEU_CODIGO_AQUI',
             
             // URL do Google Apps Script (Web App URL)
             // Siga as instruções do arquivo INSTRUCOES.md para obter esta URL
-            googleScriptUrl: 'https://script.google.com/macros/s/AKfycbw2ifC-1TNVa2_HnTdm41Nx9h0_Hf6KcyZFYYbKkSGKgwwWq1vYcXmJT-xkru4WhVEq/exec',
+            googleScriptUrl: 'COLE_A_URL_DO_SCRIPT_AQUI',
             
             // Prefixo do código de verificação
             codePrefix: 'BLACKOUT',
@@ -951,9 +1033,37 @@
             setTimeout(() => $('verifyCode').style.color = '', 500);
         });
 
-        $('btnStep4').addEventListener('click', async () => {
-            clearErrors();
-            showLoading('Verificando código...');
+        // Configuração do retry
+        const VERIFY_CONFIG = {
+            maxAttempts: 10,        // Máximo de tentativas
+            intervalSeconds: 30,    // Segundos entre tentativas
+        };
+
+        let verifyInterval = null;
+        let countdownInterval = null;
+        let currentAttempt = 0;
+        let countdownValue = 0;
+
+        function stopVerification() {
+            if (verifyInterval) clearInterval(verifyInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+            verifyInterval = null;
+            countdownInterval = null;
+            currentAttempt = 0;
+        }
+
+        function updateCountdown() {
+            countdownValue--;
+            if (countdownValue >= 0) {
+                $('countdown').textContent = countdownValue;
+            }
+        }
+
+        async function attemptVerification() {
+            currentAttempt++;
+            $('attemptNumber').textContent = currentAttempt;
+            $('countdown').textContent = VERIFY_CONFIG.intervalSeconds;
+            countdownValue = VERIFY_CONFIG.intervalSeconds;
 
             try {
                 const charData = await fetchCharacter(state.nick);
@@ -961,20 +1071,20 @@
                 
                 if (comment.includes(state.verificationCode)) {
                     // Sucesso!
-                    // Log: Verificação completa
+                    stopVerification();
+                    
                     await logToSheet('verified', {
                         nick: state.nick,
                         fullName: state.fullName,
                         phone: state.phone,
                         level: charData.character.level,
                         vocation: charData.character.vocation,
-                        verified: true
+                        verified: true,
+                        attempts: currentAttempt
                     });
 
-                    // Limpar código usado
                     localStorage.removeItem(`blackout_verify_${state.nick.toLowerCase()}`);
 
-                    // Preencher resumo
                     $('summaryNick').textContent = state.nick;
                     $('summaryName').textContent = state.fullName;
                     $('summaryPhone').textContent = state.phone;
@@ -983,26 +1093,66 @@
                     state.currentStep = 5;
                     updateProgress(5, 'completed');
                     showStep('step5success');
-                } else {
-                    // Log: Falha na verificação
-                    await logToSheet('verification_failed', {
-                        nick: state.nick,
-                        fullName: state.fullName,
-                        phone: state.phone,
-                        expectedCode: state.verificationCode
-                    });
-
-                    $('errorMessage').innerHTML = `
-                        O código <strong>${state.verificationCode}</strong> não foi encontrado 
-                        na comment do personagem <strong>${state.nick}</strong>.<br><br>
-                        Verifique se você salvou as alterações no site do Tibia e tente novamente.
-                    `;
-                    showStep('step5error');
+                    return true;
                 }
             } catch (error) {
-                showStep('step4');
-                showError('error4', error.message || 'Erro ao verificar');
+                console.error('Erro na tentativa', currentAttempt, error);
             }
+
+            // Não encontrou ainda
+            if (currentAttempt >= VERIFY_CONFIG.maxAttempts) {
+                // Esgotou tentativas
+                stopVerification();
+                
+                await logToSheet('verification_failed', {
+                    nick: state.nick,
+                    fullName: state.fullName,
+                    phone: state.phone,
+                    expectedCode: state.verificationCode,
+                    attempts: currentAttempt
+                });
+
+                $('errorMessage').innerHTML = `
+                    O código <strong>${state.verificationCode}</strong> não foi encontrado 
+                    na comment do personagem <strong>${state.nick}</strong> após ${VERIFY_CONFIG.maxAttempts} tentativas.<br><br>
+                    Verifique se você salvou as alterações no site do Tibia e tente novamente.
+                `;
+                showStep('step5error');
+            }
+
+            return false;
+        }
+
+        function startVerification() {
+            currentAttempt = 0;
+            $('maxAttempts').textContent = VERIFY_CONFIG.maxAttempts;
+            $('searchingCode').textContent = state.verificationCode;
+            
+            showStep('step4verifying');
+            
+            // Primeira tentativa imediata
+            attemptVerification();
+            
+            // Countdown visual
+            countdownValue = VERIFY_CONFIG.intervalSeconds;
+            countdownInterval = setInterval(updateCountdown, 1000);
+            
+            // Tentativas subsequentes
+            verifyInterval = setInterval(() => {
+                countdownValue = VERIFY_CONFIG.intervalSeconds;
+                attemptVerification();
+            }, VERIFY_CONFIG.intervalSeconds * 1000);
+        }
+
+        $('btnStep4').addEventListener('click', () => {
+            clearErrors();
+            startVerification();
+        });
+
+        $('btnCancelVerify').addEventListener('click', () => {
+            stopVerification();
+            updateProgress(4);
+            showStep('step4');
         });
 
         $('btnBack4').addEventListener('click', () => {
