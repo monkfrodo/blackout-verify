@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificação - Blackout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0c;
+            --bg-card: #12121a;
+            --gold: #c9a227;
+            --gold-light: #e8c547;
+            --gold-dim: #8a6f1a;
+            --text: #d4d4d8;
+            --text-dim: #71717a;
+            --red: #dc2626;
+            --green: #22c55e;
+            --border: #27272a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', Georgia, serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-image: 
+                radial-gradient(ellipse at 50% 0%, rgba(201, 162, 39, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(201, 162, 39, 0.04) 0%, transparent 30%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        }
+
+        .guild-crest {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .guild-crest svg {
+            width: 64px;
+            height: 64px;
+            fill: var(--gold);
+            opacity: 0.9;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gold);
+            text-align: center;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 32px;
+        }
+
+        /* Progress bar */
+        .progress {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .progress-dot.active {
+            background: var(--gold);
+            box-shadow: 0 0 8px rgba(201, 162, 39, 0.5);
+        }
+
+        .progress-dot.completed {
+            background: var(--green);
+        }
+
+        /* Steps */
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form elements */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .step-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .step-description {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            color: var(--text);
+            font-family: 'Crimson Text', serif;
+            font-size: 1.1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--gold-dim);
+            box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.1);
+        }
+
+        input::placeholder {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 100%);
+            border: none;
+            border-radius: 3px;
+            color: var(--bg-dark);
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255,255,255,0.03);
+            border-color: var(--text-dim);
+            color: var(--text);
+        }
+
+        /* Código de verificação */
+        .code-display {
+            background: var(--bg-dark);
+            border: 2px dashed var(--gold-dim);
+            border-radius: 4px;
+            padding: 24px;
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .code-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 8px;
+        }
+
+        .code-value {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.2em;
+            user-select: all;
+            cursor: pointer;
+        }
+
+        .code-hint {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        .instructions {
+            background: rgba(201, 162, 39, 0.05);
+            border-left: 3px solid var(--gold-dim);
+            padding: 16px;
+            margin: 24px 0;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        .instructions a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+
+        /* Character info */
+        .char-info {
+            background: var(--bg-dark);
+            border-radius: 4px;
+            padding: 16px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .char-avatar {
+            width: 64px;
+            height: 64px;
+            background: var(--border);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .char-avatar img {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+        }
+
+        .char-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .char-name {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem;
+            color: var(--gold);
+            margin-bottom: 4px;
+        }
+
+        .char-meta {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Resultado */
+        .result {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-icon.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 2px solid var(--green);
+        }
+
+        .result-icon.error {
+            background: rgba(220, 38, 38, 0.1);
+            border: 2px solid var(--red);
+        }
+
+        .result-icon svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .result-icon.success svg {
+            fill: var(--green);
+        }
+
+        .result-icon.error svg {
+            fill: var(--red);
+        }
+
+        .result-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .result-title.success {
+            color: var(--green);
+        }
+
+        .result-title.error {
+            color: var(--red);
+        }
+
+        .result-message {
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .whatsapp-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 32px;
+            background: #25D366;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .whatsapp-link:hover {
+            background: #22c35e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-link svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-dim);
+            font-style: italic;
+        }
+
+        /* Error message */
+        .error-msg {
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 4px;
+            padding: 12px 16px;
+            color: var(--red);
+            font-size: 0.9rem;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .error-msg.visible {
+            display: block;
+        }
+
+        /* Summary */
+        .summary {
+            background: var(--bg-dark);
+            border-radius: 4px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .summary-value {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .footer a {
+            color: var(--gold-dim);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="guild-crest">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 5 L90 25 L90 55 C90 75 70 90 50 95 C30 90 10 75 10 55 L10 25 Z" fill="none" stroke="currentColor" stroke-width="3"/>
+                    <path d="M50 20 L65 35 L50 50 L35 35 Z" fill="currentColor" opacity="0.3"/>
+                    <path d="M35 45 L50 60 L65 45" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M50 60 L50 75" stroke="currentColor" stroke-width="2"/>
+                    <circle cx="50" cy="35" r="5" fill="currentColor"/>
+                </svg>
+            </div>
+
+            <h1>Blackout</h1>
+            <p class="subtitle">Verificação de Acesso</p>
+
+            <!-- Progress -->
+            <div class="progress">
+                <div class="progress-dot active" data-step="1"></div>
+                <div class="progress-dot" data-step="2"></div>
+                <div class="progress-dot" data-step="3"></div>
+                <div class="progress-dot" data-step="4"></div>
+                <div class="progress-dot" data-step="5"></div>
+            </div>
+
+            <!-- Step 1: Nick do personagem -->
+            <div class="step active" id="step1">
+                <div class="step-title">Qual o nick do seu personagem?</div>
+                <div class="step-description">Digite o nome exato como aparece no jogo.</div>
+                <div class="form-group">
+                    <input type="text" id="inputNick" placeholder="Ex: Knight Blackout" autocomplete="off">
+                </div>
+                <button class="btn" id="btnStep1">Continuar</button>
+                <div class="error-msg" id="error1"></div>
+            </div>
+
+            <!-- Step 2: Nome completo -->
+            <div class="step" id="step2">
+                <div class="char-info" id="charInfo">
+                    <div class="char-avatar">
+                        <img id="charOutfit" src="" alt="Outfit">
+                    </div>
+                    <div class="char-details">
+                        <div class="char-name" id="charDisplayName"></div>
+                        <div class="char-meta" id="charMeta"></div>
+                    </div>
+                </div>
+                <div class="step-title">Qual o seu nome completo?</div>
+                <div class="step-description">Nome e sobrenome, por favor.</div>
+                <div class="form-group">
+                    <input type="text" id="inputName" placeholder="Ex: João Silva" autocomplete="name">
+                </div>
+                <button class="btn" id="btnStep2">Continuar</button>
+                <button class="btn btn-secondary" id="btnBack2">← Voltar</button>
+                <div class="error-msg" id="error2"></div>
+            </div>
+
+            <!-- Step 3: Telefone -->
+            <div class="step" id="step3">
+                <div class="step-title">Qual o seu WhatsApp?</div>
+                <div class="step-description">Número com DDD. Este será o número liberado no grupo.</div>
+                <div class="form-group">
+                    <input type="tel" id="inputPhone" placeholder="Ex: 11 99999-9999" autocomplete="tel">
+                </div>
+                <button class="btn" id="btnStep3">Continuar</button>
+                <button class="btn btn-secondary" id="btnBack3">← Voltar</button>
+                <div class="error-msg" id="error3"></div>
+            </div>
+
+            <!-- Step 4: Código de verificação -->
+            <div class="step" id="step4">
+                <div class="step-title">Verificação do personagem</div>
+                <div class="step-description">Agora precisamos confirmar que o personagem é seu.</div>
+
+                <div class="code-display">
+                    <div class="code-label">Seu código de verificação</div>
+                    <div class="code-value" id="verifyCode" title="Clique para copiar"></div>
+                    <div class="code-hint">Clique no código para copiar</div>
+                </div>
+
+                <div class="instructions">
+                    <ol>
+                        <li>Acesse o <a href="https://www.tibia.com/account/?subtopic=accountmanagement" target="_blank">site oficial do Tibia</a></li>
+                        <li>Vá em <strong>Account Management</strong></li>
+                        <li>Encontre seu personagem e clique em <strong>Edit</strong></li>
+                        <li>Cole o código acima no campo <strong>Comment</strong></li>
+                        <li>Salve e volte aqui para verificar</li>
+                    </ol>
+                </div>
+
+                <button class="btn" id="btnStep4">Verificar Agora</button>
+                <button class="btn btn-secondary" id="btnBack4">← Voltar</button>
+                <div class="error-msg" id="error4"></div>
+            </div>
+
+            <!-- Step 5: Sucesso -->
+            <div class="step" id="step5success">
+                <div class="result">
+                    <div class="result-icon success">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <h2 class="result-title success">Verificado!</h2>
+                    <p class="result-message">
+                        Bem-vindo à Blackout, guerreiro.<br>
+                        Clique abaixo para entrar no grupo.
+                    </p>
+                    <a href="#" class="whatsapp-link" id="whatsappLink" target="_blank">
+                        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        Entrar no Grupo
+                    </a>
+                </div>
+
+                <div class="summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Personagem</span>
+                        <span class="summary-value" id="summaryNick"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Nome</span>
+                        <span class="summary-value" id="summaryName"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">WhatsApp</span>
+                        <span class="summary-value" id="summaryPhone"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Erro na verificação -->
+            <div class="step" id="step5error">
+                <div class="result">
+                    <div class="result-icon error">
+                        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </div>
+                    <h2 class="result-title error">Código não encontrado</h2>
+                    <p class="result-message" id="errorMessage">
+                        O código de verificação não foi encontrado na comment do personagem.
+                        Verifique se você salvou as alterações e tente novamente.
+                    </p>
+                </div>
+                <button class="btn" id="btnRetry">Tentar Novamente</button>
+                <button class="btn btn-secondary" id="btnBackFromError">← Voltar ao início</button>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text" id="loadingText">Consultando API do Tibia...</div>
+            </div>
+
+            <div class="footer">
+                <a href="https://www.tibia.com/community/?subtopic=guilds&page=view&GuildName=Blackout" target="_blank">Blackout Guild</a> · Luminera
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURAÇÃO - EDITE APENAS ESTA SEÇÃO
+        // ============================================
+        const CONFIG = {
+            // Link do grupo/comunidade do WhatsApp
+            whatsappLink: 'https://chat.whatsapp.com/IVaUmFRyE51KOWbNdWCaNV',
+            
+            // URL do Google Apps Script (Web App URL)
+            // Siga as instruções do arquivo INSTRUCOES.md para obter esta URL
+            googleScriptUrl: 'https://script.google.com/macros/s/AKfycbw2ifC-1TNVa2_HnTdm41Nx9h0_Hf6KcyZFYYbKkSGKgwwWq1vYcXmJT-xkru4WhVEq/exec',
+            
+            // Prefixo do código de verificação
+            codePrefix: 'BLACKOUT',
+            
+            // Tempo em ms para cache do código (24 horas)
+            codeExpiry: 24 * 60 * 60 * 1000
+        };
+        // ============================================
+
+        // Estado da aplicação
+        let state = {
+            visitorId: generateVisitorId(),
+            nick: '',
+            characterData: null,
+            fullName: '',
+            phone: '',
+            verificationCode: '',
+            currentStep: 1
+        };
+
+        // Gerar ID único para o visitante (para tracking)
+        function generateVisitorId() {
+            const stored = localStorage.getItem('blackout_visitor_id');
+            if (stored) return stored;
+            const id = 'v_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('blackout_visitor_id', id);
+            return id;
+        }
+
+        // Gerar código de verificação
+        function generateCode(charName) {
+            const key = `blackout_verify_${charName.toLowerCase()}`;
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                const { code, timestamp } = JSON.parse(stored);
+                if (Date.now() - timestamp < CONFIG.codeExpiry) {
+                    return code;
+                }
+            }
+            
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let suffix = '';
+            for (let i = 0; i < 4; i++) {
+                suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const code = `${CONFIG.codePrefix}-${suffix}`;
+            
+            localStorage.setItem(key, JSON.stringify({
+                code,
+                timestamp: Date.now()
+            }));
+            
+            return code;
+        }
+
+        // Buscar dados do personagem na API do Tibia
+        async function fetchCharacter(name) {
+            const response = await fetch(`https://api.tibiadata.com/v4/character/${encodeURIComponent(name)}`);
+            if (!response.ok) throw new Error('Erro ao conectar com a API');
+            
+            const data = await response.json();
+            if (!data.character || !data.character.character || !data.character.character.name) {
+                throw new Error('Personagem não encontrado');
+            }
+            
+            return data.character;
+        }
+
+        // Enviar dados para Google Sheets
+        async function logToSheet(action, data) {
+            if (!CONFIG.googleScriptUrl || CONFIG.googleScriptUrl === 'COLE_A_URL_DO_SCRIPT_AQUI') {
+                console.log('Log (Google Sheets não configurado):', action, data);
+                return;
+            }
+
+            try {
+                const payload = {
+                    action,
+                    timestamp: new Date().toISOString(),
+                    visitorId: state.visitorId,
+                    ...data
+                };
+
+                await fetch(CONFIG.googleScriptUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            } catch (error) {
+                console.error('Erro ao enviar log:', error);
+            }
+        }
+
+        // Elementos DOM
+        const $ = id => document.getElementById(id);
+
+        // Atualizar progress dots
+        function updateProgress(step, status = 'active') {
+            document.querySelectorAll('.progress-dot').forEach((dot, index) => {
+                const dotStep = index + 1;
+                dot.classList.remove('active', 'completed');
+                
+                if (dotStep < step) {
+                    dot.classList.add('completed');
+                } else if (dotStep === step) {
+                    dot.classList.add(status === 'completed' ? 'completed' : 'active');
+                }
+            });
+        }
+
+        // Mostrar step
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            $('loading').classList.remove('active');
+            
+            const step = $(stepId);
+            if (step) step.classList.add('active');
+        }
+
+        function showLoading(text = 'Consultando API do Tibia...') {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            $('loadingText').textContent = text;
+            $('loading').classList.add('active');
+        }
+
+        function showError(elementId, message) {
+            const el = $(elementId);
+            el.textContent = message;
+            el.classList.add('visible');
+            setTimeout(() => el.classList.remove('visible'), 5000);
+        }
+
+        function clearErrors() {
+            document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('visible'));
+        }
+
+        // Formatar telefone
+        function formatPhone(value) {
+            const numbers = value.replace(/\D/g, '');
+            if (numbers.length <= 2) return numbers;
+            if (numbers.length <= 7) return `${numbers.slice(0,2)} ${numbers.slice(2)}`;
+            return `${numbers.slice(0,2)} ${numbers.slice(2,7)}-${numbers.slice(7,11)}`;
+        }
+
+        // Event Listeners
+
+        // Step 1: Nick
+        $('btnStep1').addEventListener('click', async () => {
+            clearErrors();
+            const nick = $('inputNick').value.trim();
+            
+            if (!nick) {
+                showError('error1', 'Digite o nome do personagem');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const charData = await fetchCharacter(nick);
+                state.nick = charData.character.name;
+                state.characterData = charData;
+                state.verificationCode = generateCode(state.nick);
+
+                // Log: Step 1 completado
+                await logToSheet('step1_nick', {
+                    nick: state.nick,
+                    level: charData.character.level,
+                    vocation: charData.character.vocation
+                });
+
+                // Preencher info do char
+                $('charDisplayName').textContent = charData.character.name;
+                $('charMeta').textContent = `Level ${charData.character.level} ${charData.character.vocation}`;
+                
+                const outfitId = charData.character.outfit?.looktype || 128;
+                $('charOutfit').src = `https://static.tibia.com/images/charactertrade/outfits/${outfitId}_0.gif`;
+
+                state.currentStep = 2;
+                updateProgress(2);
+                showStep('step2');
+                $('inputName').focus();
+
+            } catch (error) {
+                showStep('step1');
+                showError('error1', error.message || 'Erro ao buscar personagem');
+            }
+        });
+
+        // Step 2: Nome completo
+        $('btnStep2').addEventListener('click', async () => {
+            clearErrors();
+            const name = $('inputName').value.trim();
+            
+            if (!name) {
+                showError('error2', 'Digite seu nome completo');
+                return;
+            }
+
+            if (!name.includes(' ')) {
+                showError('error2', 'Digite nome e sobrenome');
+                return;
+            }
+
+            state.fullName = name;
+
+            // Log: Step 2 completado
+            await logToSheet('step2_name', {
+                nick: state.nick,
+                fullName: state.fullName
+            });
+
+            state.currentStep = 3;
+            updateProgress(3);
+            showStep('step3');
+            $('inputPhone').focus();
+        });
+
+        $('btnBack2').addEventListener('click', () => {
+            state.currentStep = 1;
+            updateProgress(1);
+            showStep('step1');
+        });
+
+        // Step 3: Telefone
+        $('inputPhone').addEventListener('input', (e) => {
+            e.target.value = formatPhone(e.target.value);
+        });
+
+        $('btnStep3').addEventListener('click', async () => {
+            clearErrors();
+            const phone = $('inputPhone').value.trim();
+            const phoneNumbers = phone.replace(/\D/g, '');
+            
+            if (phoneNumbers.length < 10) {
+                showError('error3', 'Digite um número válido com DDD');
+                return;
+            }
+
+            state.phone = phone;
+
+            // Log: Step 3 completado
+            await logToSheet('step3_phone', {
+                nick: state.nick,
+                fullName: state.fullName,
+                phone: state.phone
+            });
+
+            // Mostrar código
+            $('verifyCode').textContent = state.verificationCode;
+
+            state.currentStep = 4;
+            updateProgress(4);
+            showStep('step4');
+        });
+
+        $('btnBack3').addEventListener('click', () => {
+            state.currentStep = 2;
+            updateProgress(2);
+            showStep('step2');
+        });
+
+        // Step 4: Verificação
+        $('verifyCode').addEventListener('click', () => {
+            navigator.clipboard.writeText(state.verificationCode);
+            $('verifyCode').style.color = '#22c55e';
+            setTimeout(() => $('verifyCode').style.color = '', 500);
+        });
+
+        $('btnStep4').addEventListener('click', async () => {
+            clearErrors();
+            showLoading('Verificando código...');
+
+            try {
+                const charData = await fetchCharacter(state.nick);
+                const comment = charData.character.comment || '';
+                
+                if (comment.includes(state.verificationCode)) {
+                    // Sucesso!
+                    // Log: Verificação completa
+                    await logToSheet('verified', {
+                        nick: state.nick,
+                        fullName: state.fullName,
+                        phone: state.phone,
+                        level: charData.character.level,
+                        vocation: charData.character.vocation,
+                        verified: true
+                    });
+
+                    // Limpar código usado
+                    localStorage.removeItem(`blackout_verify_${state.nick.toLowerCase()}`);
+
+                    // Preencher resumo
+                    $('summaryNick').textContent = state.nick;
+                    $('summaryName').textContent = state.fullName;
+                    $('summaryPhone').textContent = state.phone;
+                    $('whatsappLink').href = CONFIG.whatsappLink;
+
+                    state.currentStep = 5;
+                    updateProgress(5, 'completed');
+                    showStep('step5success');
+                } else {
+                    // Log: Falha na verificação
+                    await logToSheet('verification_failed', {
+                        nick: state.nick,
+                        fullName: state.fullName,
+                        phone: state.phone,
+                        expectedCode: state.verificationCode
+                    });
+
+                    $('errorMessage').innerHTML = `
+                        O código <strong>${state.verificationCode}</strong> não foi encontrado 
+                        na comment do personagem <strong>${state.nick}</strong>.<br><br>
+                        Verifique se você salvou as alterações no site do Tibia e tente novamente.
+                    `;
+                    showStep('step5error');
+                }
+            } catch (error) {
+                showStep('step4');
+                showError('error4', error.message || 'Erro ao verificar');
+            }
+        });
+
+        $('btnBack4').addEventListener('click', () => {
+            state.currentStep = 3;
+            updateProgress(3);
+            showStep('step3');
+        });
+
+        // Retry e restart
+        $('btnRetry').addEventListener('click', () => {
+            updateProgress(4);
+            showStep('step4');
+        });
+
+        $('btnBackFromError').addEventListener('click', () => {
+            // Reset state
+            state = {
+                visitorId: state.visitorId,
+                nick: '',
+                characterData: null,
+                fullName: '',
+                phone: '',
+                verificationCode: '',
+                currentStep: 1
+            };
+            $('inputNick').value = '';
+            $('inputName').value = '';
+            $('inputPhone').value = '';
+            updateProgress(1);
+            showStep('step1');
+        });
+
+        // Enter para submeter
+        $('inputNick').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') $('btnStep1').click();
+        });
+        $('inputName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') $('btnStep2').click();
+        });
+        $('inputPhone').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') $('btnStep3').click();
+        });
+
+        // Log inicial: página carregada
+        logToSheet('page_view', {});
+    </script>
+</body>
+</html>
