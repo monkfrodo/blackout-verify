@@ -429,28 +429,32 @@
         .char-info {
             background: var(--bg-dark);
             border-radius: 4px;
-            padding: 16px;
+            padding: 20px;
             margin: 20px 0;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 20px;
         }
 
         .char-avatar {
-            width: 64px;
-            height: 64px;
-            background: var(--border);
-            border-radius: 4px;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--border) 100%);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            border: 1px solid var(--border);
+            overflow: hidden;
         }
 
         .char-avatar img {
-            max-width: 100%;
-            max-height: 100%;
+            width: 64px;
+            height: 64px;
             image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            object-fit: contain;
         }
 
         .char-details {
@@ -755,7 +759,7 @@
                 <div class="step-title" data-i18n="step1_title">Qual o nick do seu personagem?</div>
                 <div class="step-description" data-i18n="step1_desc">Digite o nome exato como aparece no jogo.</div>
                 <div class="form-group">
-                    <input type="text" id="inputNick" data-i18n-placeholder="step1_placeholder" placeholder="Ex: Knight Blackout" autocomplete="off">
+                    <input type="text" id="inputNick" data-i18n-placeholder="step1_placeholder" placeholder="Ex: Hecks Leads" autocomplete="off">
                 </div>
                 <button class="btn" id="btnStep1" data-i18n="btn_continue">Continuar</button>
                 <div class="error-msg" id="error1"></div>
@@ -957,7 +961,7 @@
                 subtitle: 'Verificação de Acesso',
                 step1_title: 'Qual o nick do seu personagem?',
                 step1_desc: 'Digite o nome exato como aparece no jogo.',
-                step1_placeholder: 'Ex: Knight Blackout',
+                step1_placeholder: 'Ex: Hecks Leads',
                 step2_title: 'Qual o seu nome completo?',
                 step2_desc: 'Nome e sobrenome, por favor.',
                 step2_placeholder: 'Ex: João Silva',
@@ -1005,7 +1009,7 @@
                 subtitle: 'Access Verification',
                 step1_title: 'What is your character name?',
                 step1_desc: 'Enter the exact name as it appears in the game.',
-                step1_placeholder: 'E.g.: Knight Blackout',
+                step1_placeholder: 'E.g.: Hecks Leads',
                 step2_title: 'What is your full name?',
                 step2_desc: 'First and last name, please.',
                 step2_placeholder: 'E.g.: John Smith',
@@ -1053,7 +1057,7 @@
                 subtitle: 'Verificación de Acceso',
                 step1_title: '¿Cuál es el nombre de tu personaje?',
                 step1_desc: 'Escribe el nombre exacto como aparece en el juego.',
-                step1_placeholder: 'Ej: Knight Blackout',
+                step1_placeholder: 'Ej: Hecks Leads',
                 step2_title: '¿Cuál es tu nombre completo?',
                 step2_desc: 'Nombre y apellido, por favor.',
                 step2_placeholder: 'Ej: Juan García',
@@ -1327,8 +1331,17 @@
                 $('charDisplayName').textContent = charData.character.name;
                 $('charMeta').textContent = `Level ${charData.character.level} ${charData.character.vocation}`;
                 
-                const outfitId = charData.character.outfit?.looktype || 128;
-                $('charOutfit').src = `https://static.tibia.com/images/charactertrade/outfits/${outfitId}_0.gif`;
+                // Monta URL do outfit com cores usando a API do Tibia
+                const outfit = charData.character.outfit || {};
+                const looktype = outfit.looktype || 128;
+                const head = outfit.head || 0;
+                const body = outfit.body || 0;
+                const legs = outfit.legs || 0;
+                const feet = outfit.feet || 0;
+                const addons = outfit.addons || 0;
+                
+                // URL do outfit animado com cores corretas
+                $('charOutfit').src = `https://static.tibia.com/images/charactertrade/outfits/${looktype}_${addons}_${head}_${body}_${legs}_${feet}.gif`;
 
                 state.currentStep = 2;
                 updateProgress(2);
