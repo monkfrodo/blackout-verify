@@ -1198,27 +1198,39 @@
                 return;
             }
             
+            // Adiciona país e timestamp formatado
+            const now = new Date();
             const payload = {
                 action,
-                timestamp: new Date().toISOString(),
+                timestamp: now.toISOString(),
+                date: now.toLocaleDateString('pt-BR'),
+                time: now.toLocaleTimeString('pt-BR'),
                 visitorId: state.visitorId,
+                country: selectedCountry ? selectedCountry.name : '',
+                countryCode: selectedCountry ? selectedCountry.code : '',
                 ...data
             };
             
             console.log('Enviando para planilha:', payload);
             
             try {
-                // Usar FormData como fallback que funciona com no-cors
-                const formData = new FormData();
-                formData.append('payload', JSON.stringify(payload));
-                
-                await fetch(CONFIG.googleScriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
+                // Método que funciona: criar um script tag dinâmico (JSONP-style)
+                // Isso bypassa completamente as restrições de CORS
+                const params = new URLSearchParams();
+                Object.keys(payload).forEach(key => {
+                    const value = payload[key];
+                    if (value !== undefined && value !== null && value !== '') {
+                        params.append(key, typeof value === 'object' ? JSON.stringify(value) : value);
+                    }
                 });
                 
-                console.log('Log enviado com sucesso');
+                const url = `${CONFIG.googleScriptUrl}?${params.toString()}`;
+                
+                // Usar uma imagem oculta para fazer a requisição (GET)
+                const img = new Image();
+                img.src = url;
+                
+                console.log('Log enviado via GET');
             } catch (error) {
                 console.error('Erro ao enviar log:', error);
             }
